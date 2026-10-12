@@ -6,10 +6,13 @@ type Variant = "primary" | "secondary" | "outline" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg" | "icon";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-brand-600 text-white hover:bg-brand-700 border border-transparent",
+  primary:
+    "bg-brand-600 text-white hover:bg-brand-700 border border-transparent",
   secondary: "bg-ink-900 text-white hover:bg-ink-800 border border-transparent",
-  outline: "bg-white text-ink-800 border border-ink-200 hover:border-ink-300 hover:bg-ink-50",
-  ghost: "bg-transparent text-ink-700 hover:bg-ink-100 border border-transparent",
+  outline:
+    "bg-white text-ink-800 border border-ink-200 hover:border-ink-300 hover:bg-ink-50",
+  ghost:
+    "bg-transparent text-ink-700 hover:bg-ink-100 border border-transparent",
   danger: "bg-rose-600 text-white hover:bg-rose-700 border border-transparent",
 };
 
@@ -28,6 +31,7 @@ interface CommonProps {
   size?: Size;
   className?: string;
   children: ReactNode;
+  isLoading?: boolean;
 }
 
 export function Button({
@@ -35,11 +39,28 @@ export function Button({
   size = "md",
   className,
   children,
+  isLoading = false,
+  disabled,
   ...props
 }: CommonProps & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button className={cn(BASE, VARIANTS[variant], SIZES[size], className)} {...props}>
-      {children}
+    <button
+      className={cn(BASE, VARIANTS[variant], SIZES[size], className)}
+      disabled={disabled || isLoading}
+      aria-busy={isLoading}
+      {...props}
+    >
+      {isLoading ? (
+        <>
+          <span
+            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"
+            aria-hidden="true"
+          />
+          <span>Loading...</span>
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 }
@@ -56,7 +77,11 @@ export function ButtonLink({
     "href" | "className" | "children"
   >) {
   return (
-    <Link href={href} className={cn(BASE, VARIANTS[variant], SIZES[size], className)} {...props}>
+    <Link
+      href={href}
+      className={cn(BASE, VARIANTS[variant], SIZES[size], className)}
+      {...props}
+    >
       {children}
     </Link>
   );

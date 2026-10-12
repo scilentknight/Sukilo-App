@@ -13,7 +13,7 @@ export function Logo({ className }: { className?: string }) {
         S
       </span>
       <span className="text-lg font-bold tracking-tight text-ink-900">
-        Sukilo<span className="text-brand-600">.</span>
+        Sukilo
       </span>
     </Link>
   );
