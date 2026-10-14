@@ -18,6 +18,7 @@ export default function ImagePreviews({ images, onRemove }) {
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       {previews.map((url, index) => (
         <div key={url} className="relative aspect-square overflow-hidden rounded-xl bg-gray-100">
+          {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview */}
           <img
             src={url}
             alt={`Product preview ${index + 1}`}

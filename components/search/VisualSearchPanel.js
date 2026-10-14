@@ -1,16 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getApiBaseUrl, searchProductsByImage } from "@/lib/api";
-import { formatProductPrice, formatVisualMatch } from "@/lib/format";
-import { filterStrongVisualMatches } from "@/lib/visualMatch";
+import Link from "next/link";
+import { searchByImage } from "@/lib/search";
+import { formatMoney, formatVisualMatch } from "@/lib/format";
 import CameraCapture from "@/components/search/CameraCapture";
 import ImageUploader from "@/components/search/ImageUploader";
 
 const SEARCH_LIMIT = 20;
 
 /**
- * @param {{ compact?: boolean }} props
+ * Photo search: pick or capture an image, then show visually similar products
+ * from `POST /api/v1/search/image`. Only the latest search updates the UI.
  */
 export default function VisualSearchPanel({ compact = false }) {
   const [status, setStatus] = useState("idle");
@@ -33,11 +34,10 @@ export default function VisualSearchPanel({ compact = false }) {
     setErrorMessage(null);
     setResults([]);
     try {
-      const data = await searchProductsByImage(file, { limit: SEARCH_LIMIT });
+      const items = await searchByImage(file, { limit: SEARCH_LIMIT });
       if (generation !== searchGeneration.current) {
         return;
       }
-      const items = filterStrongVisualMatches(data?.results ?? []);
       setResults(items);
       setStatus(items.length > 0 ? "success" : "empty");
     } catch (err) {
@@ -56,15 +56,10 @@ export default function VisualSearchPanel({ compact = false }) {
         setStatus("error");
         return;
       }
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
       setPreviewUrl(URL.createObjectURL(file));
-      setResults([]);
-      setErrorMessage(null);
       runSearch(file);
     },
-    [previewUrl, runSearch]
+    [runSearch],
   );
 
   const isSearching = status === "searching";
@@ -76,6 +71,7 @@ export default function VisualSearchPanel({ compact = false }) {
         className={`flex ${previewMinH} items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gradient-to-b from-gray-50 to-white`}
       >
         {previewUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- local blob preview
           <img
             src={previewUrl}
             alt="Selected query"
@@ -83,7 +79,7 @@ export default function VisualSearchPanel({ compact = false }) {
           />
         ) : (
           <div className="px-6 text-center">
-            <p className="text-sm font-semibold text-gray-700">Drop a fashion photo here</p>
+            <p className="text-sm font-semibold text-gray-700">Choose a product photo</p>
             <p className="mt-1 text-xs text-gray-500">Clothing, shoes, bags & accessories</p>
           </div>
         )}
@@ -95,19 +91,25 @@ export default function VisualSearchPanel({ compact = false }) {
       </div>
 
       {isSearching && (
-        <p className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-[#cf3d5c]">
+        <p
+          role="status"
+          className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-sm font-semibold text-[#cf3d5c]"
+        >
           Finding similar styles…
         </p>
       )}
 
       {status === "empty" && (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          No strong matches. Try a clearer apparel photo.
+          No strong matches. Try a clearer photo of a single item.
         </p>
       )}
 
       {status === "error" && errorMessage && (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+        <p
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+        >
           {errorMessage}
         </p>
       )}
@@ -117,33 +119,35 @@ export default function VisualSearchPanel({ compact = false }) {
           <p className="mb-3 text-sm font-bold text-gray-900">
             {results.length} similar {results.length === 1 ? "item" : "items"}
           </p>
-          <ul className="grid max-h-[280px] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3">
-            {results.map((item) => {
-              const src = item.image_url?.startsWith("http")
-                ? item.image_url
-                : `${getApiBaseUrl()}${item.image_url}`;
-              return (
-                <li key={item.product_id}>
-                  <a
-                    href={`/products/${item.product_id}`}
-                    className="block overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm transition hover:shadow-md"
-                  >
-                    <img src={src} alt={item.name} className="aspect-square w-full object-cover" />
-                    <div className="p-2">
-                      <p className="line-clamp-2 text-xs font-semibold text-gray-900">
-                        {item.name}
-                      </p>
-                      <p className="mt-0.5 text-xs font-bold text-gray-800">
-                        {formatProductPrice(item.price, item.currency)}
-                      </p>
-                      <p className="text-[10px] font-semibold text-[#ff3f6c]">
-                        {formatVisualMatch(item.similarity)}
-                      </p>
-                    </div>
-                  </a>
-                </li>
-              );
-            })}
+          <ul className="grid max-h-[420px] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3">
+            {results.map((item) => (
+              <li key={item.product_id}>
+                <Link
+                  href={`/product/${item.product_id}`}
+                  className="block overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm transition hover:shadow-md"
+                >
+                  {item.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- API-hosted upload
+                    <img
+                      src={item.image_url}
+                      alt={item.name}
+                      className="aspect-square w-full object-cover"
+                    />
+                  ) : (
+                    <div className="aspect-square w-full bg-gray-100" />
+                  )}
+                  <div className="p-2">
+                    <p className="line-clamp-2 text-xs font-semibold text-gray-900">{item.name}</p>
+                    <p className="mt-0.5 text-xs font-bold text-gray-800">
+                      {formatMoney(item.price, { currency: item.currency })}
+                    </p>
+                    <p className="text-[10px] font-semibold text-[#ff3f6c]">
+                      {formatVisualMatch(item.similarity)}
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
       )}

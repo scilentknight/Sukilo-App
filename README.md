@@ -1,29 +1,21 @@
-# Sukilo — Multi-vendor ecommerce frontend
+# Sukilo — storefront
 
-A production-oriented ecommerce storefront built with **Next.js 16 (App Router)**,
-**React 19** and **TypeScript**, consuming the existing FastAPI backend.
-
-It is designed around a multi-country / multi-currency / multi-vendor /
-multi-language architecture, with a premium, calm commercial UI and full
-loading / error / empty states.
-
----
+Next.js 16 (App Router) and React 19 storefront for the Sukilo FastAPI backend
+(`../Sukilo-Api`). The code is plain JavaScript (`.js` / `.jsx`); path aliases
+(`@/…`) are defined in `jsconfig.json`.
 
 ## Getting started
 
-```bash
-# 1. Ensure the FastAPI backend is running on http://127.0.0.1:8000
-# 2. Configure the environment
-cp .env.example .env.local        # already present by default
-
-# 3. Install & run
+```powershell
+# The API must be running first (see ../Sukilo-Api/README.md), on http://localhost:8000
+Copy-Item .env.example .env.local   # only if .env.local does not exist yet
 npm install
-npm run dev                       # http://localhost:3000
+npm run dev                          # http://localhost:3000
 ```
 
-Production:
+Production build:
 
-```bash
+```powershell
 npm run lint
 npm run build
 npm start
@@ -31,126 +23,132 @@ npm start
 
 ### Environment variables
 
-| Variable | Description |
+| Variable | Purpose |
 | --- | --- |
-| `NEXT_PUBLIC_API_URL` | Base URL of the FastAPI backend (default `http://127.0.0.1:8000`). Never hardcoded in components — read through `src/lib/api/client.ts`. |
-| `NEXT_PUBLIC_SITE_URL` | Public site URL used for canonical/OpenGraph metadata and sitemap. |
+| `NEXT_PUBLIC_API_URL` | Base URL of the FastAPI backend, without `/api/v1`. Defaults to `http://localhost:8000`. |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL for canonical/OpenGraph metadata and the sitemap. |
+| `NEXT_PUBLIC_CONSENT_POLICY_VERSION` | Consent policy version sent with consent changes. The API publishes no endpoint for it and rejects stale versions. Defaults to `dev-1`, the development API's version. |
 
----
+`NEXT_PUBLIC_*` values are embedded in the browser bundle and are read at build
+time, so never put secrets in them, and rebuild after changing them.
 
-## Architecture
+The browser origin (for example `http://localhost:3000`) must be listed in the
+API's `CORS_ORIGINS` and `FRONTEND_URL`, otherwise requests and token refresh
+are rejected.
+
+## Structure
 
 ```
-src/
-├─ app/                     # App Router pages (mostly Server Components)
-│  ├─ layout.tsx            # Root shell: providers, header, footer, SEO metadata
-│  ├─ page.tsx              # Home page (streamed, sectioned)
-│  ├─ product/
-│  │  ├─ page.tsx           # Product listing / search (URL-driven)
-│  │  └─ [id]/page.tsx      # Product detail
-│  ├─ vendors, cart, wishlist, account, help, about, … 
-│  ├─ sitemap.ts, robots.ts, not-found.tsx, error.tsx
-├─ components/
-│  ├─ layout/               # Header, Footer, selectors, mobile menu, mega menu
-│  ├─ home/                 # Hero, categories, brands, deals, vendors, …
-│  ├─ search/               # SearchBar + image/voice/barcode dialogs
-│  ├─ products/             # ProductCard, gallery, purchase panel, reviews
-│  ├─ filters/              # Filter panel, toolbar, pagination, results view
-│  ├─ vendors/              # VendorCard
-│  └─ ui/                   # Button, Badge, Rating, Modal, Dropdown, icons, …
-├─ context/                 # Country / Currency / Locale / Cart / Wishlist
-├─ hooks/                   # useDebounce, useVoiceSearch, useBarcodeScanner, …
-├─ config/locales.ts        # Single source of truth for markets & currencies
-└─ lib/
-   ├─ api/                  # client.ts + products/categories/brands/vendors/search
-   ├─ format.ts             # Intl-based money/number/date formatting
-   ├─ product.ts            # Country price resolution & localisation helpers
-   ├─ search-params.ts      # URL ⇄ typed ProductQuery mapping
-   ├─ persistent-store.ts   # useSyncExternalStore localStorage utility
-   └─ recently-viewed.ts    # Client-only recently-viewed store
+app/            Routes (server components by default; "use client" only where needed)
+  account/      Overview, addresses, preferences, security, privacy
+  admin/        Admin panel with its own layout (no storefront header/footer)
+    login/      Credential sign-in (`POST /api/v1/auth/login`); unsigned visitors land here
+    (panel)/    Signed-in frame: dashboard, access control, and planned sections
+components/     UI grouped by area: layout, home, products, filters, search,
+                barcode, vendor, account, admin, ui
+  admin/        AdminShell, AdminHeader, AdminSidebar, nav.js (sidebar entries),
+                dashboard/ (dashboard page, chart and widgets)
+context/        Country / currency / locale, auth, cart and wishlist providers
+hooks/          Small client hooks (debounce, voice, image search, suggestions…)
+config/         Markets, currencies and display-only FX rates
+schemas/        zod schemas for the auth and account forms
+lib/
+  api.js        The only place that calls fetch: base URL, JSON/FormData bodies,
+                204/empty responses, ApiError with readable messages
+  auth.js       Session: login/register/OTP/password reset, refresh, logout
+  account.js    /me: profile, sessions, identifier change, preferences, consents,
+                addresses, data export, closure; step-up and signed-in OTP verify
+  access.js     /access: roles, permissions, assignment list/grant/revoke
+  admin.js      Admin dashboard data. Returns sample data from admin-sample.js
+                for now; its comment documents the response shape to build
+  products.js   Product list, detail, GTIN lookup, categories, create
+  search.js     Barcode, barcode photo, image search, suggestions
+  system.js     Health, database and vector-store probes for /status
+  format.js, product.js, search-params.js, …  Pure helpers
 ```
 
-### Key principles
+## Authentication
 
-- **Backend access is isolated.** Every network call goes through
-  `src/lib/api/*`; UI components never call `fetch` or read the API URL.
-- **The URL is the source of truth** for the listing page. Filters, sorting,
-  pagination and search are encoded in query params, so results are shareable
-  and server-renderable.
-- **Server-first rendering.** Home/listing/detail pages fetch on the server with
-  revalidation. Client components are used only where interaction requires them.
-- **Country drives everything.** `CountryProvider` → `CurrencyProvider` +
-  `LocaleProvider`. Adding a market means editing `src/config/locales.ts`, not
-  touching components.
+- Login returns a short-lived access token. It is kept **in memory only** and
+  sent as `Authorization: Bearer …`.
+- The API also sets an HttpOnly refresh cookie and a CSRF cookie, both scoped
+  to `/api/v1/auth`. The CSRF value is returned in the login/refresh body and
+  stored in `localStorage` so it can be echoed as `X-CSRF-Token`; it is useless
+  without the HttpOnly cookie.
+- On page load, and when a request gets `401`, `lib/auth.js` calls
+  `POST /api/v1/auth/token/refresh` once and retries.
+- Refresh tokens rotate on every use, and the API revokes the session if an
+  old one is replayed. Tabs therefore refresh one at a time (Web Locks API) and
+  share the new access token and sign-out over a same-origin `BroadcastChannel`.
+- `/account/*` redirects anonymous users to `/login?callbackUrl=…`.
+  `/admin/*` redirects them to `/admin/login`, which signs in with the same
+  email-or-phone and password endpoint. Authorization is enforced by the API;
+  the client redirect is only for UX. Any signed-in user can open the admin
+  shell, so every admin endpoint (including the future dashboard one) must
+  check permissions server-side, as `/access/*` already does.
+- Sensitive actions re-check the password and send an emailed code first:
+  data export (`DATA_EXPORT`), account closure and role changes (`STEP_UP`).
+  The API also requires the access token to come from a password login made
+  recently: 5 minutes for changing email/phone, 15 for closing the account.
+  Refreshed tokens (for example after a page reload) don't qualify, so those
+  pages ask the user to sign in again first. After an email/phone change the
+  API ends every session, so the UI signs out.
+- Registration sends a 6-digit code by email, then `POST /api/v1/auth/otp/verify`
+  with purpose `REGISTER` activates the account. After login, `GET /api/v1/access/me`
+  decides the next page: a staff role opens `/admin`, and an account with no role
+  stays on the storefront. In development the API writes the email to
+  `Sukilo-Api/data/outbox` unless `SMTP_HOST` and `SMTP_FROM` are set. Without
+  those settings the verify page shows the code, because no email is transmitted.
 
----
+## Backend endpoints used
 
-## Backend integration
-
-Connected endpoints (all verified against `http://127.0.0.1:8000/docs`):
-
-| Feature | Endpoint(s) |
+| Feature | Endpoint |
 | --- | --- |
-| Product list + filters/sort/pagination | `GET /api/v1/products` |
-| Product search | `GET /api/v1/products/search` |
-| Featured / latest | `GET /api/v1/products/featured`, `/latest` |
-| Filters & facets | `GET /api/v1/products/filters` |
-| Product detail / related / variants / vendors / images | `GET /api/v1/products/{id}`, `/related`, `/variants`, `/vendors`, `/images` |
-| Reviews | `GET /api/v1/products/{id}/reviews`, `/reviews/summary` |
-| Categories | `GET /api/v1/categories`, `/tree`, `/{id}/children`, `/{id}/breadcrumb` |
-| Brands | `GET /api/v1/brands`, `/search` |
-| Vendors | `GET /api/v1/vendors`, `/search` |
+| Product list, search, category filter | `GET /api/v1/products?skip&limit&q&category` |
+| Categories (header, filters, home, sitemap) | `GET /api/v1/products/categories` |
+| Product detail | `GET /api/v1/products/{id}` |
+| GS1 link `/01/{gtin}` | `GET /api/v1/products/gtin/{gtin}` |
+| Barcode search (typed or scanned) | `GET /api/v1/search/barcode?code=` |
+| Barcode from photo | Decoded in the browser (`@zxing/browser`), then `GET /api/v1/search/barcode` |
+| Visual search | `POST /api/v1/search/image` |
+| Vendor product creation | `POST /api/v1/products` (multipart) |
+| Register / verify / login | `POST /api/v1/auth/register`, `/otp/verify`, `/login` |
+| Password reset (+ resend code) | `POST /api/v1/auth/password/forgot`, `/otp/request` (`RESET`), `/otp/verify`, `/password/reset` |
+| Refresh / logout | `POST /api/v1/auth/token/refresh`, `/logout` |
+| Account overview, devices | `GET /api/v1/me`, `GET /api/v1/auth/sessions`, `DELETE /api/v1/auth/sessions/{id}`, `POST /api/v1/auth/sessions/revoke-all` |
+| Change email / phone | `PATCH /api/v1/me`, `POST /api/v1/auth/otp/verify` (`VERIFY_EMAIL`/`VERIFY_PHONE`), `POST /api/v1/me/identifier-change/confirm` |
+| Market preferences | `GET` / `PUT /api/v1/me/preferences` (409 on a stale `expected_version`) |
+| Consents and history | `GET /api/v1/me/consents?country_code[&history&limit&cursor]`, `POST /api/v1/me/consents` |
+| Addresses | `GET` / `POST /api/v1/me/addresses`, `PATCH` / `DELETE /api/v1/me/addresses/{id}`, `POST /api/v1/me/addresses/{id}/default` |
+| Data export | `POST /api/v1/me/data-export/verification`, `/otp/verify` (`DATA_EXPORT`), `POST /api/v1/me/data-export` (`Idempotency-Key`), `GET /api/v1/me/data-exports/{id}`, `POST …/download-grant`, `POST …/download` |
+| Account closure | `POST /api/v1/auth/step-up/request`, `/otp/verify` (`STEP_UP`), `POST /api/v1/me/closure`, `POST /api/v1/me/closure/confirm` |
+| Signed-in roles | `GET /api/v1/access/me` |
+| Admin: access control | `GET /api/v1/access/roles`, `/permissions`, `/assignments`; `POST /api/v1/access/assignments` and `DELETE /api/v1/access/assignments/{id}` with `X-Step-Up-Grant` |
+| Status page | `GET /api/v1/health`, `GET /api/v1/database-test`, `GET /api/v1/vectors/health` |
 
-The response envelope `{ success, data, message }` and pagination
-`{ page, limit, total, has_next }` are unwrapped centrally in
-`src/lib/api/client.ts`.
+`POST /api/v1/vectors/index`, `/vectors/search` and `/vectors/smoke` are
+operator-only demo routes without authentication and are deliberately not
+called from the storefront.
 
-### Pricing
+Image search and product creation need the API's vector stack
+(`ENABLE_VECTOR_STACK=true` with Qdrant); otherwise they return `503` and the UI
+shows that error.
 
-Product **detail** returns country-specific prices (`prices[]` — NP/NPR, BD/BDT,
-CN/CNY). The UI always prefers the backend price for the active country. Only
-when no matching country price exists does it fall back to a **display-only** FX
-conversion using static rates in `src/config/locales.ts` (clearly flagged in the
-UI as approximate).
+## Known gaps (no backend support yet)
 
----
-
-## Features & status
-
-### Fully functional
-- Premium home page with all 17 sections
-- Product listing with category / brand / store / price / rating / availability /
-  attribute filters, 8 sort options, grid & list views, pagination
-- Text search with debounced autocomplete (products + categories + brands),
-  recent & popular searches
-- Product detail: gallery, country pricing, variants, vendor offers,
-  specifications, reviews, related products
-- Store listings, cart, wishlist (persisted client-side)
-- Country / currency / language selectors driving formatting and content
-- Loading skeletons, error states and empty states everywhere
-- SEO metadata, OpenGraph, sitemap, robots
-
-### Front-end complete, awaiting backend support
-- **Image search** — full UI (pick / preview / remove / submit) + `searchByImage()`
-  service abstraction. The API exposes no visual-search endpoint yet; the dialog
-  reports this honestly instead of faking results. TODO marked in
-  `src/lib/api/search.ts`.
-- **Barcode search** — live camera scanning via `@zxing/browser` plus manual
-  entry. No dedicated barcode endpoint exists, so lookups bridge through product
-  search. TODO marked for `GET /products/barcode/{code}`.
-- **Voice search** — fully working via the browser Web Speech API (client-side
-  STT, no paid service); the transcript feeds the normal search endpoint.
-- **Country-scoped catalogs** — sending `country_code` to the list endpoint is
-  not yet honoured by the backend; price/localisation already work per-country.
-- **Cart checkout, auth, newsletter, support** — front-end abstractions ready,
-  no backend endpoints exist yet.
-
----
-
-## Notes
-
-- Next.js is configured with `images.remotePatterns` for `picsum.photos` and the
-  local backend, so product imagery is optimised without layout shift.
-- The category tree endpoint returns ~5,000 nodes (~800 KB); it is reduced
-  server-side (`src/lib/api/nav.ts`) to a small navigable shape before it ever
-  reaches the client.
+- No cart/order/checkout API: cart and wishlist are stored in the browser only.
+- No brands, vendors/stores, reviews, ratings, stock, discounts or sort options.
+  `/vendors` is a placeholder and the vendor dashboard lists recent products with
+  `source = "vendor"` (there is no per-vendor ownership).
+- Products have a single price and currency. Prices in another market currency
+  are shown as an approximate ("≈") conversion using static rates in
+  `config/locales.js`.
+- No endpoint to resend a registration code; the OTP page links back to the
+  registration form instead.
+- Data exports stay `PENDING` until a background worker prepares them; the API
+  has no worker yet, and `download` returns an opaque reference with no
+  endpoint to fetch the file.
+- No "list my exports" endpoint: the privacy page remembers the latest export
+  request id in `localStorage`.
+- Access control needs user and country IDs (UUIDs); there is no user search
+  or country lookup endpoint.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createProduct, listCategories } from "@/lib/api";
+import { createProduct, listCategories } from "@/lib/products";
 import { buildProductFormData, validateVendorProduct } from "@/lib/vendor";
 import ProductCreated from "@/components/vendor/ProductCreated";
 import ProductFields from "@/components/vendor/ProductFields";
@@ -28,19 +28,10 @@ export default function VendorProductForm() {
 
   useEffect(() => {
     let ignore = false;
-    async function loadCategories() {
-      try {
-        const data = await listCategories();
-        if (!ignore) {
-          setCategories(data?.items ?? []);
-        }
-      } catch {
-        if (!ignore) {
-          setCategories([]);
-        }
-      }
-    }
-    loadCategories();
+    // Categories only power the datalist suggestions; a failure leaves free text.
+    listCategories()
+      .then((items) => !ignore && setCategories(items))
+      .catch(() => {});
     return () => {
       ignore = true;
     };
@@ -68,6 +59,9 @@ export default function VendorProductForm() {
   };
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const validationError = validateVendorProduct(values, images);
     if (validationError) {
       setError(validationError);
@@ -113,7 +107,10 @@ export default function VendorProductForm() {
         }
       />
       {error && (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <p
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+        >
           {error}
         </p>
       )}

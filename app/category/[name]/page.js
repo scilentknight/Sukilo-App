@@ -1,16 +1,8 @@
-import { Suspense } from "react";
-import CategoryCatalogPage from "@/components/category/CategoryCatalogPage";
+import { permanentRedirect } from "next/navigation";
+import { categoryHref } from "@/lib/search-params";
 
-export default function CategoryPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center text-stone-500">
-          Loading category…
-        </div>
-      }
-    >
-      <CategoryCatalogPage />
-    </Suspense>
-  );
+/** Legacy category URL; the product listing is the canonical category page. */
+export default async function CategoryPage({ params }) {
+  const { name } = await params;
+  permanentRedirect(categoryHref(decodeURIComponent(name)));
 }

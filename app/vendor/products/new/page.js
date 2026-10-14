@@ -2,11 +2,15 @@ import Link from "next/link";
 import VendorHeader from "@/components/vendor/VendorHeader";
 import VendorProductForm from "@/components/vendor/VendorProductForm";
 
+export const metadata = {
+  title: "Add a product",
+};
+
 export default function NewVendorProductPage() {
   return (
     <>
       <VendorHeader />
-      <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+      <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
         <Link href="/vendor" className="text-sm font-bold text-[#e24b6a] hover:underline">
           ← Vendor home
         </Link>
@@ -24,7 +28,7 @@ export default function NewVendorProductPage() {
           </div>
           <VendorProductForm />
         </div>
-      </main>
+      </div>
     </>
   );
 }

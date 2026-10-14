@@ -17,7 +17,7 @@ export default function ProductCreated({ product, onReset }) {
       )}
       <div className="mt-4 flex flex-wrap gap-3">
         <Link
-          href={`/products/${product.id}`}
+          href={`/product/${product.id}`}
           className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-bold text-white"
         >
           View product

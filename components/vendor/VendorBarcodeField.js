@@ -3,7 +3,7 @@
 import { useState } from "react";
 import ImageUploader from "@/components/search/ImageUploader";
 import CameraCapture from "@/components/search/CameraCapture";
-import { decodeBarcodeFromFile } from "@/lib/decodeBarcode";
+import { decodeBarcodeFromFile } from "@/lib/barcode";
 
 const INPUT_CLASS =
   "mt-1.5 w-full rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-sm text-[#2b2422] outline-none transition focus:border-[#e24b6a] focus:ring-2 focus:ring-rose-100";

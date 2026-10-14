@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { buildDigitalLink } from "@/lib/gs1";
-import { renderBarcodeDataUrl } from "@/lib/renderBarcode";
+import { renderBarcodeDataUrl } from "@/lib/barcode";
 
 /**
  * @param {{ gtin: string, productName: string, className?: string }} props
@@ -63,6 +63,7 @@ export default function ProductShareQr({ gtin, productName, className = "" }) {
     <div className={className}>
       <div className="rounded-2xl bg-stone-50 px-4 py-5">
         {barcodeUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- generated data URL
           <img
             src={barcodeUrl}
             alt={`Barcode for ${productName}`}
@@ -74,6 +75,7 @@ export default function ProductShareQr({ gtin, productName, className = "" }) {
       </div>
       <div className="mt-4 flex items-center gap-4 rounded-2xl border border-stone-100 px-4 py-3">
         {qrUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- generated data URL
           <img
             src={qrUrl}
             alt="Product Digital Link QR code"

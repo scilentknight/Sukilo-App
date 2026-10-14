@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 
 /**
  * @param {{ onSelect: (file: File) => void, disabled?: boolean }} props
@@ -28,6 +28,7 @@ export default function ImageUploader({ onSelect, disabled = false }) {
         disabled={disabled}
       />
       <Button
+        type="button"
         variant="outline"
         className="w-full sm:w-auto"
         disabled={disabled}
