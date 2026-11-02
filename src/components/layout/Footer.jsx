@@ -39,6 +39,7 @@ export default function Footer() {
                 ["Sign In", "/auth/login"],
                 ["Register", "/auth/register"],
                 ["My Account", "/account"],
+                ["Sell on Sukilo", "/vendor/apply"],
               ].map(([label, href]) => (
                 <li key={label}>
                   <Link href={href} className="hover:text-white transition-colors">

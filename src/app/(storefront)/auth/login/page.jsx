@@ -51,7 +51,10 @@ function LoginContent() {
         password: form.password,
         countryCode: form.countryCode.trim().toUpperCase(),
       });
-      router.push("/account");
+      const next = searchParams.get("next");
+      const target =
+        next && next.startsWith("/") && !next.startsWith("//") ? next : "/account";
+      router.push(target);
     } catch (err) {
       setServerError(err.message);
     } finally {

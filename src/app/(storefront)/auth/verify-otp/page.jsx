@@ -94,6 +94,7 @@ function VerifyOtpContent() {
     );
 
     if (challengeId && isValidUuid(challengeId)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- restore a pending challenge after mount
       setStoredChallengeId(challengeId);
     }
 
@@ -516,7 +517,7 @@ function VerifyOtpContent() {
 
         {/* Footer */}
         <div className="text-center mt-6 text-sm text-ink-500">
-          Didn't get the code or code expired?{" "}
+          Didn&apos;t get the code or code expired?{" "}
           <Link
             href={backLink}
             className="text-brand-600 hover:text-brand-700 font-medium"
@@ -527,7 +528,7 @@ function VerifyOtpContent() {
 
         <div className="text-center mt-3 text-xs text-ink-400">
           The code is valid for 15 minutes. Check your spam folder if
-          you don't see it.
+          you don&apos;t see it.
         </div>
       </div>
     </div>

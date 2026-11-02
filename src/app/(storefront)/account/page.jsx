@@ -116,6 +116,12 @@ export default function AccountPage() {
             >
               Browse Products
             </Link>
+            <Link
+              href="/vendor/apply"
+              className="px-4 py-2 bg-brand-50 text-brand-700 border border-brand-200 rounded-lg text-sm font-medium hover:bg-brand-100 transition-colors"
+            >
+              Become a Seller
+            </Link>
             <button
               onClick={handleSignOut}
               className="px-4 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded-lg text-sm font-medium hover:bg-rose-100 transition-colors"

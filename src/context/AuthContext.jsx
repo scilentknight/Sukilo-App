@@ -66,7 +66,14 @@ export function AuthProvider({ children }) {
     setRoles([]);
   }, []);
 
-  const isAdmin = roles.includes("SUPER_ADMIN");
+  const ADMIN_ROLES = [
+    "SUPER_ADMIN",
+    "COUNTRY_ADMIN",
+    "COUNTRY_FINANCE",
+    "COUNTRY_OPERATIONS",
+    "MODERATOR_SUPPORT",
+  ];
+  const isAdmin = roles.some((role) => ADMIN_ROLES.includes(role));
 
   return (
     <AuthContext.Provider value={{ user, roles, isLoading, signOut, isAdmin }}>

@@ -142,6 +142,14 @@ export default function Header() {
                       My Account
                     </Link>
 
+                    <Link
+                      href="/vendor/apply"
+                      onClick={() => setAccountOpen(false)}
+                      className="block px-4 py-2.5 text-sm transition-colors hover:bg-slate-100"
+                    >
+                      Sell on Sukilo
+                    </Link>
+
                     {isAdmin && (
                       <Link
                         href="/admin"
@@ -305,6 +313,14 @@ export default function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   My Account
+                </Link>
+
+                <Link
+                  href="/vendor/apply"
+                  className="rounded-lg px-3 py-2.5 text-sm text-ink-700 transition-colors hover:bg-slate-100 hover:text-brand-600"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Sell on Sukilo
                 </Link>
 
                 {isAdmin && (
