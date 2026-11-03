@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -28,7 +29,7 @@ export default function Header() {
   function handleSearch(e) {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+    router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
   }
 
   async function handleSignOut() {
@@ -38,37 +39,41 @@ export default function Header() {
   }
 
   return (
-
     <header className="sticky top-0 z-50 shadow-sm">
       {/* Main header bar */}
       <div className="bg-ink-900 text-white">
         <div className="container-page grid grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[1fr_minmax(0,2fr)_1fr] items-center gap-3 md:gap-6 py-3">
-
           {/* Logo - Left */}
           <Link
             href="/"
-            className="justify-self-start flex-shrink-0 text-3xl font-extrabold tracking-tight text-white hover:text-brand-300 transition-colors"
+            className="justify-self-start flex-shrink-0 transition-opacity hover:opacity-90"
           >
-            sukilo
+            <Image
+              src="/sukilo-logo-horizontal-light.png"
+              alt="Sukilo"
+              width={616}
+              height={260}
+              priority
+              className="h-8 w-auto sm:h-10"
+            />
           </Link>
-
           {/* Search Bar - Center */}
           <form
             onSubmit={handleSearch}
-            className="flex w-full max-w-2xl justify-self-center min-w-0"
+            className="flex w-full max-w-2xl min-w-0 justify-self-center overflow-hidden rounded-xl bg-white transition-all duration-200 focus-within:ring-2 focus-within:ring-brand-400 focus-within:ring-offset-2 focus-within:ring-offset-white"
           >
             <input
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search products..."
-              className="min-w-0 flex-1 rounded-l-xl border-0 bg-white px-3 md:px-5 py-3 text-sm text-slate-800 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-400"
+              className="min-w-0 flex-1 border-0 bg-transparent px-3 py-3 text-sm text-slate-800 placeholder:text-slate-500 outline-none ring-0 focus:outline-none focus:ring-0 md:px-5"
             />
 
             <button
               type="submit"
               aria-label="Search"
-              className="flex items-center justify-center rounded-r-xl bg-brand-500 px-4 md:px-5 text-white transition-colors hover:bg-brand-600"
+              className="flex shrink-0 items-center justify-center bg-brand-500 px-4 text-white transition-colors hover:bg-brand-600 md:px-5"
             >
               <svg
                 className="h-5 w-5"
@@ -85,10 +90,8 @@ export default function Header() {
               </svg>
             </button>
           </form>
-
           {/* Account Area - Right */}
           <div className="flex items-center justify-self-end gap-3 md:gap-5">
-
             {isLoading ? (
               <div className="h-8 w-20 animate-pulse rounded bg-ink-700" />
             ) : user ? (
@@ -364,7 +367,5 @@ export default function Header() {
         </div>
       )}
     </header>
-
   );
 }
-

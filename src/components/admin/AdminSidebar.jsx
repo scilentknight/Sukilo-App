@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -35,17 +36,20 @@ export default function AdminSidebar({ collapsed, mobileOpen, onNavigate }) {
             className="flex items-center gap-3 focus-ring"
             title="Sukilo Admin"
           >
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-600 text-sm font-black text-white">
-              S
-            </span>
-            <span className={`leading-tight ${collapsed ? "md:hidden" : ""}`}>
-              <span className="block text-base font-bold tracking-tight text-ink-900">
-                sukilo
-              </span>
-              <span className="block text-[11px] font-medium text-ink-500">
-                Admin workspace
-              </span>
-            </span>
+            <Image
+              src="/sukilo-logo-horizontal.png"
+              alt="Sukilo"
+              width={616}
+              height={260}
+              className={`h-9 w-auto shrink-0 ${collapsed ? "md:hidden" : ""}`}
+            />
+            <Image
+              src="/sukilo-mark.png"
+              alt="Sukilo"
+              width={264}
+              height={332}
+              className={`hidden h-9 w-auto shrink-0 ${collapsed ? "md:block" : "md:hidden"}`}
+            />
           </Link>
         </div>
 
