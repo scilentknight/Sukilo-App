@@ -1,4 +1,4 @@
-import { authRequest } from "./auth";
+import { authRequest } from "./api/auth";
 
 /** GET /api/v1/me — current user profile */
 export function getProfile() {

@@ -44,7 +44,7 @@ function notify() {
 
 function storeSession(
   { access_token: token, csrf_token: csrfToken },
-  { viaPassword = false } = {}
+  { viaPassword = false } = {},
 ) {
   accessToken = token;
   passwordSignInAt = viaPassword ? Date.now() : null;
@@ -58,8 +58,7 @@ function clearSession() {
   passwordSignInAt = null;
   try {
     window.localStorage.removeItem(CSRF_STORAGE_KEY);
-  } catch {
-  }
+  } catch {}
   tabChannel()?.postMessage({ accessToken: null });
   notify();
 }
@@ -178,7 +177,7 @@ export function refreshSession() {
       storeSession(
         await post("/api/v1/auth/token/refresh", undefined, {
           "X-CSRF-Token": csrfToken,
-        })
+        }),
       );
       return true;
     } catch (error) {
@@ -230,10 +229,8 @@ export async function authRequest(path, options = {}) {
     return await apiRequest(path, withBearer(options));
   } catch (error) {
     if (!(error instanceof ApiError) || error.status !== 401) throw error;
-    const replacedMeanwhile =
-      accessToken !== null && accessToken !== tokenUsed;
+    const replacedMeanwhile = accessToken !== null && accessToken !== tokenUsed;
     if (!replacedMeanwhile && !(await refreshSession())) throw error;
     return apiRequest(path, withBearer(options));
   }
 }
-

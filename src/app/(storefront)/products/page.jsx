@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import ProductGrid from "@/components/products/ProductGrid";
-import { listProducts, listCategories } from "@/lib/products";
+import { listProducts, listCategories } from "@/services/product.service";
 import { Alert, EmptyState } from "@/components/ui";
 import { Suspense } from "react";
 
@@ -25,7 +25,12 @@ function ProductsContent() {
   useEffect(() => {
     let active = true;
     const skip = (page - 1) * LIMIT;
-    listProducts({ skip, limit: LIMIT, category: category || undefined, q: q || undefined })
+    listProducts({
+      skip,
+      limit: LIMIT,
+      category: category || undefined,
+      q: q || undefined,
+    })
       .then((data) => {
         if (!active) return;
         if (Array.isArray(data)) {
@@ -42,7 +47,9 @@ function ProductsContent() {
       .finally(() => {
         if (active) setLoading(false);
       });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [category, q, page]);
 
   useEffect(() => {
@@ -71,7 +78,9 @@ function ProductsContent() {
           </h1>
           {!loading && (
             <p className="text-sm text-ink-500 mt-1">
-              {total > 0 ? `${total} product${total !== 1 ? "s" : ""}` : "No products found"}
+              {total > 0
+                ? `${total} product${total !== 1 ? "s" : ""}`
+                : "No products found"}
             </p>
           )}
         </div>
@@ -85,7 +94,9 @@ function ProductsContent() {
           >
             <option value="">All Categories</option>
             {categories.map((c) => (
-              <option key={c.name} value={c.name}>{c.name} ({c.count})</option>
+              <option key={c.name} value={c.name}>
+                {c.name} ({c.count})
+              </option>
             ))}
           </select>
           {(category || q) && (
@@ -99,14 +110,21 @@ function ProductsContent() {
         </div>
       </div>
 
-      {error && <Alert type="error" className="mb-6">{error}</Alert>}
+      {error && (
+        <Alert type="error" className="mb-6">
+          {error}
+        </Alert>
+      )}
 
       {!loading && products.length === 0 && !error ? (
         <EmptyState
           title="No products found"
           description="Try changing your filters or search terms."
           action={
-            <Link href="/products" className="px-5 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors">
+            <Link
+              href="/products"
+              className="px-5 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors"
+            >
               View all products
             </Link>
           }
@@ -143,9 +161,14 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="container-page py-16 text-center text-ink-500">Loading products…</div>}>
+    <Suspense
+      fallback={
+        <div className="container-page py-16 text-center text-ink-500">
+          Loading products…
+        </div>
+      }
+    >
       <ProductsContent />
     </Suspense>
   );
 }
-

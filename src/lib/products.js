@@ -1,5 +1,5 @@
-import { apiRequest, toQueryString } from "./api";
-import { authRequest } from "./auth";
+import { apiRequest, toQueryString } from "./api/api";
+import { authRequest } from "./api/auth";
 
 /** GET /api/v1/products — list with optional filters */
 export function listProducts(params = {}) {

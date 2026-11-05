@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -23,8 +22,9 @@ import {
   Watch,
 } from "lucide-react";
 
+import OurServices from "@/components/OurServices";
 import ProductGrid from "@/components/products/ProductGrid";
-import { listProducts, listCategories } from "@/lib/products";
+import { listProducts, listCategories } from "@/services/product.service";
 import { Alert } from "@/components/ui";
 
 // ================================
@@ -85,17 +85,12 @@ function getProductId(product) {
   return product.id ?? product.product_id;
 }
 
-// ================================
-// PRODUCT CAROUSEL
-// ================================
-
 function ProductCarousel({ products, loading }) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const featuredProducts = products.slice(0, 8);
   const activeProduct = featuredProducts[activeIndex];
 
-  // Automatic carousel rotation
   useEffect(() => {
     if (featuredProducts.length < 2) return;
 
@@ -106,24 +101,21 @@ function ProductCarousel({ products, loading }) {
     return () => clearInterval(timer);
   }, [featuredProducts.length]);
 
-  // Previous product
   const previous = () => {
     setActiveIndex(
       (index) =>
-        (index - 1 + featuredProducts.length) % featuredProducts.length
+        (index - 1 + featuredProducts.length) % featuredProducts.length,
     );
   };
 
-  // Next product
   const next = () => {
     setActiveIndex((index) => (index + 1) % featuredProducts.length);
   };
 
-  // Loading state
   if (loading) {
     return (
-      <section className="container-page py-8 sm:py-12">
-        <div className="skeleton aspect-[16/7] rounded-3xl" />
+      <section className="container-page py-6">
+        <div className="skeleton aspect-[3/1] rounded-xl" />
       </section>
     );
   }
@@ -132,181 +124,147 @@ function ProductCarousel({ products, loading }) {
 
   const productId = getProductId(activeProduct);
   const image = getProductImage(activeProduct);
+  const productName = activeProduct.name || activeProduct.title;
 
   return (
-    <section className="container-page py-8 sm:py-12">
-
-      {/* Section heading */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-600">
-            Discover something new
-          </p>
-
-          <h2 className="mt-2 text-2xl font-black text-ink-900 sm:text-3xl">
-            Featured finds
-          </h2>
-        </div>
-
-        <Link
-          href="/products"
-          className="hidden items-center gap-2 text-sm font-semibold text-ink-700 transition hover:text-brand-600 sm:flex"
-        >
-          Explore all <ArrowRight size={16} />
-        </Link>
-      </div>
-
-      {/* Carousel container */}
-      <div className="relative overflow-hidden rounded-3xl bg-ink-50">
-
-        {/* Animated product content */}
+    <section className="container-page py-6 sm:py-8">
+      {/* Main promotional banner */}
+      <div className="relative overflow-hidden rounded-xl bg-orange-50">
         <AnimatePresence mode="wait">
           <motion.div
             key={productId ?? activeIndex}
-            initial={{
-              opacity: 0,
-              x: 45,
-            }}
-            animate={{
-              opacity: 1,
-              x: 0,
-            }}
-            exit={{
-              opacity: 0,
-              x: -45,
-            }}
-            transition={{
-              duration: 0.45,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="grid min-h-[360px] grid-cols-1 md:grid-cols-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.1 }}
+            className="relative"
           >
+            <Link
+              href={`/products/${productId}`}
+              aria-label={`View ${productName}`}
+              className="relative block aspect-[3/1] min-h-[180px] max-h-[480px] overflow-hidden sm:aspect-[3.2/1]"
+            >
+              {image ? (
+                <motion.img
+                  src={image}
+                  alt={productName}
+                  initial={{ scale: 1.04 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.6 }}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center bg-orange-50">
+                  <Package size={80} className="text-orange-200" />
+                </div>
+              )}
 
-            {/* Product information */}
-            <div className="flex flex-col justify-center p-6 sm:p-10 lg:p-14">
+              {/* Readability overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
 
-              <p className="text-xs font-bold uppercase tracking-widest text-brand-600">
-                {activeProduct.category?.name ||
-                  activeProduct.category ||
-                  "Featured product"}
-              </p>
+              {/* Product details */}
+              <div className="absolute inset-y-0 left-0 flex w-[75%] flex-col justify-center p-5 text-white sm:w-1/2 sm:p-10 lg:p-14">
+                <span className="w-fit rounded-full bg-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] backdrop-blur-sm sm:text-xs">
+                  {activeProduct.category?.name ||
+                    activeProduct.category ||
+                    "Featured product"}
+                </span>
 
-              <h3 className="mt-4 line-clamp-2 text-3xl font-black leading-tight text-ink-900 sm:text-4xl">
-                {activeProduct.name || activeProduct.title}
-              </h3>
+                <h2 className="mt-3 line-clamp-2 text-xl font-black leading-tight sm:mt-5 sm:text-3xl lg:text-5xl">
+                  {productName}
+                </h2>
 
-              <p className="mt-4 line-clamp-3 max-w-md text-sm leading-6 text-ink-500">
-                {activeProduct.description ||
-                  "Discover quality products selected for your everyday needs."}
-              </p>
+                <p className="mt-2 line-clamp-2 text-xs text-white/85 sm:mt-4 sm:text-sm lg:text-base">
+                  {activeProduct.description ||
+                    "Discover something special, selected for you."}
+                </p>
 
-              <p className="mt-6 text-2xl font-bold text-ink-900">
-                {activeProduct.currency || "NPR"}{" "}
-                {Number(activeProduct.price || 0).toLocaleString()}
-              </p>
+                <p className="mt-3 text-lg font-bold sm:mt-5 sm:text-2xl">
+                  {activeProduct.currency || "NPR"}{" "}
+                  {Number(activeProduct.price || 0).toLocaleString()}
+                </p>
 
-              {/* View product button */}
-              <Link
-                href={`/products/${productId}`}
-                className="mt-6 inline-flex w-fit items-center gap-2 rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white transition hover:bg-brand-700"
-              >
-                View product
-                <ArrowUpRight size={18} />
-              </Link>
-
-              {/* Pagination indicators */}
-              <div className="mt-8 flex items-center gap-2">
-                {featuredProducts.map((product, index) => (
-                  <button
-                    key={getProductId(product) ?? index}
-                    onClick={() => setActiveIndex(index)}
-                    aria-label={`Show ${product.name || product.title}`}
-                    aria-current={index === activeIndex}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      index === activeIndex
-                        ? "w-8 bg-brand-600"
-                        : "w-2 bg-ink-300 hover:bg-brand-400"
-                    }`}
-                  />
-                ))}
+                <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-md bg-white px-4 py-2 text-xs font-bold text-orange-600 transition hover:bg-orange-50 sm:mt-6 sm:px-6 sm:py-3 sm:text-sm">
+                  Shop now
+                  <ArrowUpRight size={16} />
+                </span>
               </div>
-
-              <p className="mt-3 text-xs text-ink-400">
-                {activeIndex + 1} / {featuredProducts.length} products
-              </p>
-            </div>
-
-            {/* Product image area */}
-            <div className="group relative flex min-h-[280px] items-center justify-center overflow-hidden bg-white p-8 sm:p-12">
-
-              {/* Clickable product image */}
-              <Link
-                href={`/products/${productId}`}
-                className="absolute inset-0 flex items-center justify-center p-8 sm:p-12"
-                aria-label={`View ${activeProduct.name || activeProduct.title}`}
-              >
-                {image ? (
-                  <motion.img
-                    src={image}
-                    alt={activeProduct.name || activeProduct.title}
-                    initial={{
-                      opacity: 0,
-                      scale: 0.9,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      scale: 1,
-                    }}
-                    transition={{
-                      duration: 0.6,
-                      ease: "easeOut",
-                    }}
-                    className="h-full max-h-[420px] w-full object-contain transition-transform duration-500 group-hover:scale-105"
-                  />
-                ) : (
-                  <Package size={100} className="text-ink-200" />
-                )}
-              </Link>
-
-              {/* Previous arrow */}
-              {featuredProducts.length > 1 && (
-                <button
-                  type="button"
-                  onClick={previous}
-                  aria-label="Previous product"
-                  className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full border border-ink-100 bg-white/95 p-3 text-ink-800 shadow-md transition-all duration-300 hover:scale-110 hover:bg-brand-600 hover:text-white sm:left-5"
-                >
-                  <ChevronLeft size={22} />
-                </button>
-              )}
-
-              {/* Next arrow */}
-              {featuredProducts.length > 1 && (
-                <button
-                  type="button"
-                  onClick={next}
-                  aria-label="Next product"
-                  className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full border border-ink-100 bg-white/95 p-3 text-ink-800 shadow-md transition-all duration-300 hover:scale-110 hover:bg-brand-600 hover:text-white sm:right-5"
-                >
-                  <ChevronRight size={22} />
-                </button>
-              )}
-
-              {/* Product details icon */}
-              <Link
-                href={`/products/${productId}`}
-                aria-label="Open product details"
-                className="absolute bottom-5 right-5 z-10 rounded-full bg-white p-3 text-ink-800 shadow-md transition hover:bg-brand-600 hover:text-white"
-              >
-                <ArrowUpRight size={20} />
-              </Link>
-
-            </div>
-
+            </Link>
           </motion.div>
         </AnimatePresence>
 
+        {/* Previous and next arrows */}
+        {featuredProducts.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={previous}
+              aria-label="Previous slide"
+              className="absolute left-2 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink-900 shadow-md transition hover:bg-white sm:left-4 sm:h-11 sm:w-11"
+            >
+              <ChevronLeft size={22} />
+            </button>
+
+            <button
+              type="button"
+              onClick={next}
+              aria-label="Next slide"
+              className="absolute right-2 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink-900 shadow-md transition hover:bg-white sm:right-4 sm:h-11 sm:w-11"
+            >
+              <ChevronRight size={22} />
+            </button>
+          </>
+        )}
+
+        {/* Slide indicators */}
+        <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 sm:bottom-4">
+          {featuredProducts.map((product, index) => (
+            <button
+              key={getProductId(product) ?? index}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              aria-label={`Show ${product.name || product.title}`}
+              aria-current={index === activeIndex}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                index === activeIndex
+                  ? "w-6 bg-white"
+                  : "w-1.5 bg-white/50 hover:bg-white/80"
+              }`}
+            />
+          ))}
+        </div>
       </div>
+
+      {/* Thumbnail navigation */}
+      {featuredProducts.length > 1 && (
+        <div className="mt-3 flex justify-center gap-2 overflow-x-auto pb-1">
+          {featuredProducts.map((product, index) => {
+            const thumbnail = getProductImage(product);
+
+            return (
+              <button
+                key={getProductId(product) ?? index}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                aria-label={`Show ${product.name || product.title}`}
+                className={`relative h-12 w-16 shrink-0 overflow-hidden rounded-md border-2 bg-white transition sm:h-16 sm:w-24 ${
+                  index === activeIndex
+                    ? "border-orange-500"
+                    : "border-transparent hover:border-orange-200"
+                }`}
+              >
+                {thumbnail && (
+                  <img
+                    src={thumbnail}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
@@ -349,20 +307,16 @@ export default function HomePage() {
 
   return (
     <main className="bg-white">
-
       {/* =========================
           PRODUCT CAROUSEL
       ========================= */}
-      <ProductCarousel
-        products={products}
-        loading={loadingProducts}
-      />
+      <ProductCarousel products={products} loading={loadingProducts} />
+      <OurServices />
 
       {/* =========================
           SHOP BY CATEGORY
       ========================= */}
       <section className="container-page py-10 sm:py-14">
-
         <div className="mb-6 flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">
@@ -383,40 +337,33 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {loadingCats
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="skeleton aspect-square rounded-2xl" />
+              ))
+            : categories.map((cat) => {
+                const Icon = CATEGORY_ICONS[cat.name] || ShoppingBag;
 
-          {loadingCats ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="skeleton aspect-square rounded-2xl"
-              />
-            ))
-          ) : (
-            categories.map((cat) => {
-              const Icon = CATEGORY_ICONS[cat.name] || ShoppingBag;
+                return (
+                  <Link
+                    key={cat.id || cat.name}
+                    href={`/products?category=${encodeURIComponent(cat.name)}`}
+                    className="group flex flex-col items-center justify-center gap-4 rounded-2xl border border-ink-100 bg-white p-5 text-center transition duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-lg"
+                  >
+                    <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink-50 text-ink-700 transition group-hover:bg-brand-600 group-hover:text-white">
+                      <Icon size={26} strokeWidth={1.7} />
+                    </span>
 
-              return (
-                <Link
-                  key={cat.id || cat.name}
-                  href={`/products?category=${encodeURIComponent(cat.name)}`}
-                  className="group flex flex-col items-center justify-center gap-4 rounded-2xl border border-ink-100 bg-white p-5 text-center transition duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-lg"
-                >
-                  <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink-50 text-ink-700 transition group-hover:bg-brand-600 group-hover:text-white">
-                    <Icon size={26} strokeWidth={1.7} />
-                  </span>
+                    <span className="text-sm font-semibold text-ink-800">
+                      {cat.name}
+                    </span>
 
-                  <span className="text-sm font-semibold text-ink-800">
-                    {cat.name}
-                  </span>
-
-                  <span className="text-xs text-ink-400">
-                    {cat.count ?? 0} products
-                  </span>
-                </Link>
-              );
-            })
-          )}
-
+                    <span className="text-xs text-ink-400">
+                      {cat.count ?? 0} products
+                    </span>
+                  </Link>
+                );
+              })}
         </div>
       </section>
 
@@ -425,7 +372,6 @@ export default function HomePage() {
       ========================= */}
       <section className="container-page pb-12">
         <div className="flex flex-col items-start justify-between gap-6 rounded-3xl bg-brand-700 p-8 text-white sm:flex-row sm:items-center sm:p-12">
-
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-brand-200">
               A little extra for you
@@ -446,7 +392,6 @@ export default function HomePage() {
           >
             Shop now <ArrowRight size={18} />
           </Link>
-
         </div>
       </section>
 
@@ -454,7 +399,6 @@ export default function HomePage() {
           FEATURED PRODUCTS
       ========================= */}
       <section className="container-page pb-14 sm:pb-20">
-
         <div className="mb-6 flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">
@@ -485,16 +429,13 @@ export default function HomePage() {
           isLoading={loadingProducts}
           columns={4}
         />
-
       </section>
 
       {/* =========================
           TRUST BADGES
       ========================= */}
       <section className="border-t border-ink-100 bg-ink-50">
-
         <div className="container-page grid grid-cols-2 gap-8 py-10 sm:grid-cols-4 sm:py-14">
-
           {TRUST_ITEMS.map(({ icon: Icon, title, description }) => (
             <div
               key={title}
@@ -505,20 +446,14 @@ export default function HomePage() {
               </span>
 
               <div>
-                <h3 className="text-sm font-bold text-ink-900">
-                  {title}
-                </h3>
+                <h3 className="text-sm font-bold text-ink-900">{title}</h3>
 
-                <p className="mt-1 text-xs text-ink-500">
-                  {description}
-                </p>
+                <p className="mt-1 text-xs text-ink-500">{description}</p>
               </div>
             </div>
           ))}
-
         </div>
       </section>
-
     </main>
   );
 }

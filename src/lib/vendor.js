@@ -1,4 +1,4 @@
-import { authRequest } from "./auth";
+import { authRequest } from "./api/auth";
 
 /* Seller onboarding endpoints (app/api/v1/endpoints/vendor_applications.py) */
 

@@ -12,7 +12,7 @@ import {
   subscribe,
   logout as authLogout,
   refreshSession,
-} from "@/lib/auth";
+} from "@/lib/api/auth";
 import { getProfile, getRoles } from "@/lib/account";
 
 const AuthContext = createContext(null);
@@ -50,7 +50,9 @@ export function AuthProvider({ children }) {
     refreshSession().then(() => {
       if (!cancelled) loadUserData();
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [loadUserData]);
 
   // React to sign-in / sign-out events from auth module
@@ -87,4 +89,3 @@ export function useAuth() {
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }
-

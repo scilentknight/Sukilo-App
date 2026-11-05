@@ -8,7 +8,7 @@ import {
   verifyRegistration,
   verifyPasswordResetCode,
   resendRegistrationOtp,
-} from "@/lib/auth";
+} from "@/lib/api/auth";
 
 import Button from "@/components/ui/Button";
 import { Alert } from "@/components/ui";
@@ -56,7 +56,7 @@ function VerifyOtpContent() {
   // Timer state
   const [secondsLeft, setSecondsLeft] = useState(OTP_TTL_SECONDS);
   const [resendSecondsLeft, setResendSecondsLeft] = useState(
-    RESEND_INTERVAL_SECONDS
+    RESEND_INTERVAL_SECONDS,
   );
   const [expired, setExpired] = useState(false);
 
@@ -82,15 +82,13 @@ function VerifyOtpContent() {
 
   // Restore verification session
   useEffect(() => {
-    const challengeId = sessionStorage.getItem(
-      "sukilo_last_challenge_id"
-    );
+    const challengeId = sessionStorage.getItem("sukilo_last_challenge_id");
 
     const email = sessionStorage.getItem("sukilo_reg_email");
 
     const timestamp = parseInt(
       sessionStorage.getItem("sukilo_otp_ts") || "0",
-      10
+      10,
     );
 
     if (challengeId && isValidUuid(challengeId)) {
@@ -140,7 +138,7 @@ function VerifyOtpContent() {
     const updateResendTimer = () => {
       const remaining = Math.max(
         0,
-        Math.ceil((resendAvailableAt - Date.now()) / 1000)
+        Math.ceil((resendAvailableAt - Date.now()) / 1000),
       );
 
       setResendSecondsLeft(remaining);
@@ -174,9 +172,7 @@ function VerifyOtpContent() {
     const finalChallengeId = activeChallengeId?.trim();
 
     if (!finalChallengeId || !isValidUuid(finalChallengeId)) {
-      setError(
-        "Verification session is missing. Please register again."
-      );
+      setError("Verification session is missing. Please register again.");
       return;
     }
 
@@ -223,9 +219,7 @@ function VerifyOtpContent() {
         sessionStorage.removeItem("sukilo_reg_email");
         sessionStorage.removeItem("sukilo_otp_ts");
 
-        router.push(
-          `/auth/reset-password?grant=${encodeURIComponent(grant)}`
-        );
+        router.push(`/auth/reset-password?grant=${encodeURIComponent(grant)}`);
       } else {
         throw new Error("Unsupported OTP verification purpose.");
       }
@@ -237,11 +231,11 @@ function VerifyOtpContent() {
         message.toLowerCase().includes("expired")
       ) {
         setError(
-          "This OTP has expired or was already used. Please request a new one."
+          "This OTP has expired or was already used. Please request a new one.",
         );
       } else if (message.toLowerCase().includes("invalid")) {
         setError(
-          "The code you entered is incorrect. Please check your email and try again."
+          "The code you entered is incorrect. Please check your email and try again.",
         );
       } else {
         setError(message || "Failed to verify code. Please try again.");
@@ -276,9 +270,7 @@ function VerifyOtpContent() {
       });
 
       if (!data?.challenge_id || !isValidUuid(data.challenge_id)) {
-        throw new Error(
-          "The server did not return a valid OTP challenge."
-        );
+        throw new Error("The server did not return a valid OTP challenge.");
       }
 
       const newTimestamp = Math.floor(Date.now() / 1000);
@@ -295,20 +287,12 @@ function VerifyOtpContent() {
       setSecondsLeft(OTP_TTL_SECONDS);
 
       // Start another 30-second cooldown
-      setResendAvailableAt(
-        Date.now() + RESEND_INTERVAL_SECONDS * 1000
-      );
+      setResendAvailableAt(Date.now() + RESEND_INTERVAL_SECONDS * 1000);
 
       // Save new challenge
-      sessionStorage.setItem(
-        "sukilo_last_challenge_id",
-        data.challenge_id
-      );
+      sessionStorage.setItem("sukilo_last_challenge_id", data.challenge_id);
 
-      sessionStorage.setItem(
-        "sukilo_otp_ts",
-        String(newTimestamp)
-      );
+      sessionStorage.setItem("sukilo_otp_ts", String(newTimestamp));
 
       // Update URL
       const params = new URLSearchParams(window.location.search);
@@ -319,14 +303,12 @@ function VerifyOtpContent() {
       window.history.replaceState(
         null,
         "",
-        `${window.location.pathname}?${params.toString()}`
+        `${window.location.pathname}?${params.toString()}`,
       );
 
       inputRef.current?.focus();
     } catch (err) {
-      setError(
-        err.message || "Unable to resend OTP. Please try again."
-      );
+      setError(err.message || "Unable to resend OTP. Please try again.");
     } finally {
       setResending(false);
     }
@@ -340,19 +322,14 @@ function VerifyOtpContent() {
         : "text-red-500";
 
   const backLink =
-    purpose === "REGISTER"
-      ? "/auth/register"
-      : "/auth/forgot-password";
+    purpose === "REGISTER" ? "/auth/register" : "/auth/forgot-password";
 
   const backLabel =
-    purpose === "REGISTER"
-      ? "Register again"
-      : "Request a new code";
+    purpose === "REGISTER" ? "Register again" : "Request a new code";
 
   return (
     <div className="min-h-screen bg-ink-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-
         {/* Header */}
         <div className="text-center mb-8">
           <Link
@@ -364,16 +341,12 @@ function VerifyOtpContent() {
 
           <div className="text-5xl mt-4 mb-3">📬</div>
 
-          <h1 className="text-2xl font-bold text-ink-800">
-            Verify your email
-          </h1>
+          <h1 className="text-2xl font-bold text-ink-800">Verify your email</h1>
 
           <p className="text-ink-500 text-sm mt-2">
             Enter the 6-digit code sent to{" "}
             {activeEmail ? (
-              <strong className="text-ink-700">
-                {activeEmail}
-              </strong>
+              <strong className="text-ink-700">{activeEmail}</strong>
             ) : (
               "your email"
             )}
@@ -385,7 +358,6 @@ function VerifyOtpContent() {
 
         {/* Verification Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-ink-100 p-8">
-
           {success ? (
             <Alert type="success">
               ✅ Email verified! Redirecting to sign in…
@@ -395,9 +367,7 @@ function VerifyOtpContent() {
               {/* OTP expiration */}
               {activeChallengeId && (
                 <div className="flex items-center justify-center gap-2 mb-5">
-                  <span className="text-sm text-ink-500">
-                    Code expires in
-                  </span>
+                  <span className="text-sm text-ink-500">Code expires in</span>
 
                   <span
                     className={`text-sm font-bold font-mono ${
@@ -412,8 +382,8 @@ function VerifyOtpContent() {
               {/* Expiration message */}
               {expired && !error && (
                 <Alert type="error" className="mb-5">
-                  ⏰ This OTP has expired. Please use the resend button
-                  below to receive a fresh code.
+                  ⏰ This OTP has expired. Please use the resend button below to
+                  receive a fresh code.
                 </Alert>
               )}
 
@@ -424,10 +394,7 @@ function VerifyOtpContent() {
                 </Alert>
               )}
 
-              <form
-                onSubmit={handleSubmit}
-                className="flex flex-col gap-5"
-              >
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                 {/* OTP Input */}
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-medium text-ink-700">
@@ -442,9 +409,7 @@ function VerifyOtpContent() {
                     maxLength={6}
                     value={code}
                     onChange={(e) =>
-                      setCode(
-                        e.target.value.replace(/\D/g, "").slice(0, 6)
-                      )
+                      setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
                     }
                     placeholder="000000"
                     autoComplete="one-time-code"
@@ -462,8 +427,8 @@ function VerifyOtpContent() {
                     </p>
 
                     <p>
-                      No valid verification challenge was found.
-                      Please register again.
+                      No valid verification challenge was found. Please register
+                      again.
                     </p>
 
                     <Link
@@ -479,11 +444,7 @@ function VerifyOtpContent() {
                 <Button
                   type="submit"
                   loading={loading}
-                  disabled={
-                    !activeChallengeId ||
-                    expired ||
-                    resending
-                  }
+                  disabled={!activeChallengeId || expired || resending}
                   size="lg"
                   className="w-full"
                 >
@@ -527,8 +488,8 @@ function VerifyOtpContent() {
         </div>
 
         <div className="text-center mt-3 text-xs text-ink-400">
-          The code is valid for 15 minutes. Check your spam folder if
-          you don&apos;t see it.
+          The code is valid for 15 minutes. Check your spam folder if you
+          don&apos;t see it.
         </div>
       </div>
     </div>

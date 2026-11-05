@@ -9,7 +9,7 @@ import {
   listStoreProducts,
 } from "@/lib/admin";
 import useAdminQuery from "@/lib/useAdminQuery";
-import { resolveAssetUrl } from "@/lib/api";
+import { resolveAssetUrl } from "@/lib/api/api";
 import DataTable from "@/components/admin/DataTable";
 import Drawer from "@/components/admin/Drawer";
 import {
@@ -52,10 +52,10 @@ export default function AdminStoreProductsPage() {
     [offset],
   );
   const { data, loading, error, refresh } = useAdminQuery(load);
-  const items = Array.isArray(data) ? data : data?.items ?? [];
+  const items = Array.isArray(data) ? data : (data?.items ?? []);
   const total = Array.isArray(data)
     ? data.length
-    : data?.total ?? data?.items?.length ?? 0;
+    : (data?.total ?? data?.items?.length ?? 0);
 
   useEffect(() => {
     listStoreCategories()
@@ -108,7 +108,8 @@ export default function AdminStoreProductsPage() {
     {
       header: "Product",
       cell: (row) => {
-        const image = row.images?.find((item) => item.is_primary) ?? row.images?.[0];
+        const image =
+          row.images?.find((item) => item.is_primary) ?? row.images?.[0];
         const src = image ? resolveAssetUrl(image.image_url) : null;
         return (
           <div className="flex items-center gap-3">
@@ -141,7 +142,9 @@ export default function AdminStoreProductsPage() {
     },
     {
       header: "Category",
-      cell: (row) => <span className="text-sm text-ink-700">{row.category}</span>,
+      cell: (row) => (
+        <span className="text-sm text-ink-700">{row.category}</span>
+      ),
     },
     {
       header: "Price",
@@ -154,7 +157,9 @@ export default function AdminStoreProductsPage() {
     {
       header: "Created",
       cell: (row) => (
-        <span className="text-xs text-ink-500">{formatDate(row.created_at)}</span>
+        <span className="text-xs text-ink-500">
+          {formatDate(row.created_at)}
+        </span>
       ),
     },
   ];
@@ -188,10 +193,7 @@ export default function AdminStoreProductsPage() {
       <Card>
         {error && (
           <div className="p-4">
-            <ErrorNote
-              message={error}
-              onRetry={() => refresh(true)}
-            />
+            <ErrorNote message={error} onRetry={() => refresh(true)} />
           </div>
         )}
         <DataTable
@@ -206,7 +208,12 @@ export default function AdminStoreProductsPage() {
             />
           }
         />
-        <Pagination total={total} limit={LIMIT} offset={offset} onChange={setOffset} />
+        <Pagination
+          total={total}
+          limit={LIMIT}
+          offset={offset}
+          onChange={setOffset}
+        />
       </Card>
 
       <Drawer
@@ -271,7 +278,9 @@ export default function AdminStoreProductsPage() {
             />
           </div>
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-ink-700">Description (optional)</span>
+            <span className="text-sm font-medium text-ink-700">
+              Description (optional)
+            </span>
             <textarea
               value={form.description}
               onChange={(event) => setField("description", event.target.value)}
@@ -286,15 +295,23 @@ export default function AdminStoreProductsPage() {
               type="file"
               accept="image/*"
               multiple
-              onChange={(event) => setImages(Array.from(event.target.files ?? []))}
+              onChange={(event) =>
+                setImages(Array.from(event.target.files ?? []))
+              }
               className="text-sm text-ink-600 file:mr-3 file:rounded-lg file:border-0 file:bg-ink-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink-700"
             />
             {images.length > 0 && (
-              <span className="text-xs text-ink-500">{images.length} file(s) selected</span>
+              <span className="text-xs text-ink-500">
+                {images.length} file(s) selected
+              </span>
             )}
           </label>
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="secondary" onClick={() => setFormOpen(false)}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setFormOpen(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" loading={saving}>

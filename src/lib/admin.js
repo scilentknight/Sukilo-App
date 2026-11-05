@@ -1,5 +1,5 @@
-import { authRequest } from "./auth";
-import { toQueryString } from "./api";
+import { authRequest } from "./api/auth";
+import { toQueryString } from "./api/api";
 
 function get(path, params) {
   return authRequest(`${path}${toQueryString(params)}`);
@@ -130,7 +130,12 @@ export function listPermissions() {
   return get("/api/v1/access/permissions");
 }
 
-export function listAssignments({ userId, countryId, limit = 50, cursor } = {}) {
+export function listAssignments({
+  userId,
+  countryId,
+  limit = 50,
+  cursor,
+} = {}) {
   return get("/api/v1/access/assignments", {
     user_id: userId,
     country_id: countryId,
@@ -148,11 +153,9 @@ export function listVendorReviews(countryCode) {
 }
 
 export function approveApplication(vendorCountryId, stepUpGrant) {
-  return post(
-    `/api/v1/vendor/reviews/${vendorCountryId}/approve`,
-    undefined,
-    { "X-Step-Up-Grant": stepUpGrant },
-  );
+  return post(`/api/v1/vendor/reviews/${vendorCountryId}/approve`, undefined, {
+    "X-Step-Up-Grant": stepUpGrant,
+  });
 }
 
 export function rejectApplication(vendorCountryId, reason, stepUpGrant) {
@@ -213,7 +216,9 @@ export function listSessions() {
 }
 
 export function revokeSession(sessionId) {
-  return authRequest(`/api/v1/auth/sessions/${sessionId}`, { method: "DELETE" });
+  return authRequest(`/api/v1/auth/sessions/${sessionId}`, {
+    method: "DELETE",
+  });
 }
 
 export function revokeOtherSessions() {

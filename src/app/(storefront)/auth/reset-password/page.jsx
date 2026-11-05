@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { resetPassword } from "@/lib/auth";
+import { resetPassword } from "@/lib/api/auth";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Alert } from "@/components/ui";
@@ -22,9 +22,18 @@ function ResetPasswordContent() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (password.length < 12) { setError("Password must be at least 12 characters."); return; }
-    if (password !== confirmPassword) { setError("Passwords do not match."); return; }
-    if (!grant) { setError("Invalid or expired reset link. Please request a new one."); return; }
+    if (password.length < 12) {
+      setError("Password must be at least 12 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    if (!grant) {
+      setError("Invalid or expired reset link. Please request a new one.");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -42,8 +51,15 @@ function ResetPasswordContent() {
     <div className="min-h-screen bg-ink-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="text-3xl font-black text-brand-600 tracking-tight">sukilo</Link>
-          <h1 className="mt-4 text-2xl font-bold text-ink-800">Set a new password</h1>
+          <Link
+            href="/"
+            className="text-3xl font-black text-brand-600 tracking-tight"
+          >
+            sukilo
+          </Link>
+          <h1 className="mt-4 text-2xl font-bold text-ink-800">
+            Set a new password
+          </h1>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-ink-100 p-8">
@@ -53,7 +69,11 @@ function ResetPasswordContent() {
             </Alert>
           ) : (
             <>
-              {error && <Alert type="error" className="mb-5">{error}</Alert>}
+              {error && (
+                <Alert type="error" className="mb-5">
+                  {error}
+                </Alert>
+              )}
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <Input
                   label="New Password"
@@ -73,7 +93,12 @@ function ResetPasswordContent() {
                   autoComplete="new-password"
                   required
                 />
-                <Button type="submit" loading={loading} size="lg" className="w-full mt-2">
+                <Button
+                  type="submit"
+                  loading={loading}
+                  size="lg"
+                  className="w-full mt-2"
+                >
                   Reset Password
                 </Button>
               </form>
@@ -87,9 +112,14 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading…</div>}>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          Loading…
+        </div>
+      }
+    >
       <ResetPasswordContent />
     </Suspense>
   );
 }
-

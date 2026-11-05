@@ -69,7 +69,7 @@ body {
   .container-page { padding-inline: 1.5rem; }
 }
 @media (min-width: 1024px) {
-  .container-page { padding-inline: 2rem; }
+  .container-page { padding-inline: 1rem; }
 }
 
 .focus-ring:focus-visible {

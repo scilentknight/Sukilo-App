@@ -1,4 +1,4 @@
-import { authRequest } from "./auth";
+import { authRequest } from "./api/auth";
 
 /** Start a session-bound step-up challenge after re-checking the password. */
 export function requestStepUp(password, actionClass, localeCode = "en") {
