@@ -139,6 +139,20 @@ body {
   -webkit-line-clamp: 3;
 }
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100;
+}
+
 .carousel-track {
   display: flex;
   width: 100%;
