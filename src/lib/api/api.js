@@ -95,4 +95,3 @@ export async function apiRequest(path, options = {}) {
     ? response.json()
     : response.text();
 }
-

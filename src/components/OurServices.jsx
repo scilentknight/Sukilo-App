@@ -1,25 +1,56 @@
 import Image from "next/image";
 import Link from "next/link";
-
-// ─────────────────────────────────────────────────────────────
-// Edit this list. `image` is a path inside /public (e.g. /services/sell-phone.png).
-// If `image` is missing, a neutral placeholder icon is shown instead.
-// ─────────────────────────────────────────────────────────────
 const SERVICES = [
-  { name: "Sell Phone", href: "/sell-phone", image: "/services/sell-phone.png" },
+  {
+    name: "Sell Phone",
+    href: "/sell-phone",
+    image: "/services/sell-phone.png",
+  },
   { name: "Buy Gadgets", href: "/gadgets", image: "/services/buy-gadgets.png" },
   { name: "Buy Phone", href: "/phones", image: "/services/buy-phone.png" },
   { name: "Buy Laptops", href: "/laptops", image: "/services/buy-laptops.png" },
   { name: "Rent PS5", href: "/rent-ps5", image: "/services/rent-ps5.png" },
-  { name: "Buy Cameras & Lenses", href: "/cameras", image: "/services/cameras.png" },
-  { name: "Pixel Upgrade", href: "/pixel-upgrade", image: "/services/pixel-upgrade.png" },
-  { name: "Buy Gaming Consoles", href: "/consoles", image: "/services/consoles.png" },
-  { name: "Repair Phone", href: "/repair-phone", image: "/services/repair-phone.png" },
-  { name: "Repair Laptop", href: "/repair-laptop", image: "/services/repair-laptop.png" },
-  { name: "Find New Phone", href: "/new-phones", image: "/services/find-new-phone.png" },
+  {
+    name: "Buy Cameras & Lenses",
+    href: "/cameras",
+    image: "/services/cameras.png",
+  },
+  {
+    name: "Pixel Upgrade",
+    href: "/pixel-upgrade",
+    image: "/services/pixel-upgrade.png",
+  },
+  {
+    name: "Buy Gaming Consoles",
+    href: "/consoles",
+    image: "/services/consoles.png",
+  },
+  {
+    name: "Repair Phone",
+    href: "/repair-phone",
+    image: "/services/repair-phone.png",
+  },
+  {
+    name: "Repair Laptop",
+    href: "/repair-laptop",
+    image: "/services/repair-laptop.png",
+  },
+  {
+    name: "Find New Phone",
+    href: "/new-phones",
+    image: "/services/find-new-phone.png",
+  },
   { name: "Nearby Stores", href: "/stores", image: "/services/stores.png" },
-  { name: "New Accessories", href: "/accessories", image: "/services/accessories.png" },
-  { name: "Buy Smartwatches", href: "/smartwatches", image: "/services/smartwatches.png" },
+  {
+    name: "New Accessories",
+    href: "/accessories",
+    image: "/services/accessories.png",
+  },
+  {
+    name: "Buy Smartwatches",
+    href: "/smartwatches",
+    image: "/services/smartwatches.png",
+  },
   { name: "Recycle", href: "/recycle", image: "/services/recycle.png" },
   { name: "Buy Tablets", href: "/tablets", image: "/services/tablets.png" },
   { name: "Sell Your Car", href: "/sell-car", image: "/services/sell-car.png" },
@@ -82,3 +113,100 @@ export default function OurServices({ services = SERVICES }) {
     </section>
   );
 }
+
+// "use client";
+
+// import { useEffect, useState } from "react";
+// import Image from "next/image";
+// import Link from "next/link";
+// import { listServices } from "@/services/services.service";
+
+// function Placeholder() {
+//   return (
+//     <div className="flex h-full w-full items-center justify-center bg-gray-100">
+//       <svg
+//         viewBox="0 0 100 100"
+//         className="h-12 w-12 text-gray-300"
+//         fill="none"
+//         stroke="currentColor"
+//         strokeWidth="2"
+//       >
+//         <rect x="20" y="15" width="60" height="70" rx="8" />
+//         <path d="M35 35h30M35 45h30M35 55h20" />
+//       </svg>
+//     </div>
+//   );
+// }
+
+// export default function OurServices() {
+//   const [services, setServices] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     listServices()
+//       .then((data) => {
+//         setServices(data?.items ?? data ?? []);
+//       })
+//       .catch((error) => {
+//         console.error("Failed to load services:", error);
+//       })
+//       .finally(() => {
+//         setLoading(false);
+//       });
+//   }, []);
+
+//   if (loading) {
+//     return (
+//       <section className="py-8">
+//         <div className="mx-auto max-w-7xl px-4">
+//           <h2 className="mb-5 text-xl font-bold">Our Services</h2>
+
+//           <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+//             {Array.from({ length: 8 }).map((_, index) => (
+//               <div key={index} className="animate-pulse">
+//                 <div className="aspect-square rounded-xl bg-gray-100" />
+//                 <div className="mx-auto mt-2 h-3 w-16 rounded bg-gray-100" />
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+//       </section>
+//     );
+//   }
+
+//   return (
+//     <section className="py-8">
+//       <div className="mx-auto max-w-7xl px-4">
+//         <h2 className="mb-5 text-xl font-bold">Our Services</h2>
+
+//         <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+//           {services.map((service) => (
+//             <Link
+//               key={service.id}
+//               href={service.href}
+//               className="group text-center"
+//             >
+//               <div className="relative mx-auto aspect-square w-full max-w-32 overflow-hidden rounded-xl bg-gray-50 transition duration-300 group-hover:-translate-y-1 group-hover:shadow-md">
+//                 {service.image ? (
+//                   <Image
+//                     src={service.image}
+//                     alt={service.name}
+//                     fill
+//                     sizes="(max-width: 640px) 33vw, (max-width: 1024px) 16vw, 12vw"
+//                     className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+//                   />
+//                 ) : (
+//                   <Placeholder />
+//                 )}
+//               </div>
+
+//               <p className="mt-2 text-sm font-medium text-gray-700 group-hover:text-black">
+//                 {service.name}
+//               </p>
+//             </Link>
+//           ))}
+//         </div>
+//       </div>
+//     </section>
+//   );
+// }

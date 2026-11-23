@@ -70,10 +70,10 @@ export default function Footer() {
             <h4 className="text-sm font-semibold text-white mb-3">Company</h4>
             <ul className="space-y-2 text-sm">
               {[
-                ["About Us", "#"],
-                ["Help Center", "#"],
-                ["Privacy Policy", "#"],
-                ["Terms of Service", "#"],
+                ["About Us", "/about"],
+                ["Help Center", "/help"],
+                ["Privacy Policy", "/privacy-policy"],
+                ["Terms of Service", "/terms"],
               ].map(([label, href]) => (
                 <li key={label}>
                   <Link
