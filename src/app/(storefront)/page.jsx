@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-import OurServices from "@/components/OurServices";
+
 import ProductCarousel from "@/components/home/ProductCarousel";
+import ForYouSection from "@/components/home/ForYouSection";
 import CategorySection from "@/components/home/CategorySection";
 import PromoBanner from "@/components/home/PromoBanner";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
@@ -22,10 +23,22 @@ export default function HomePage() {
 
   useEffect(() => {
     listProducts({ limit: 12 })
-      .then((data) => {
-        setProducts(data?.items ?? data ?? []);
+      .then((response) => {
+        console.log("Products API Response:", response);
+
+        // Extract products from API response
+        const data = response?.data ?? response;
+
+        const productList = Array.isArray(data)
+          ? data
+          : (data?.items ?? data?.products ?? data?.data ?? []);
+
+        console.log("Products:", productList);
+
+        setProducts(productList);
       })
       .catch((error) => {
+        console.error("Products Error:", error);
         setError(error.message || "Failed to load products.");
       })
       .finally(() => {
@@ -33,10 +46,16 @@ export default function HomePage() {
       });
 
     listCategories()
-      .then((data) => {
-        setCategories(data?.items ?? []);
+      .then((response) => {
+        const data = response?.data ?? response;
+
+        setCategories(
+          Array.isArray(data) ? data : (data?.items ?? data?.categories ?? []),
+        );
       })
-      .catch(() => {})
+      .catch((error) => {
+        console.error("Categories Error:", error);
+      })
       .finally(() => {
         setLoadingCats(false);
       });
@@ -46,7 +65,7 @@ export default function HomePage() {
     <main className="bg-white">
       <ProductCarousel products={products} loading={loadingProducts} />
 
-      <OurServices />
+      <ForYouSection products={products} />
 
       <CategorySection categories={categories} loading={loadingCats} />
 

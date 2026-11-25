@@ -3,7 +3,7 @@ import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata = {
   title: {
-    default: "Sukilo — Shop Smarter",
+    default: "Sukilo — Online Shopping Platform",
     template: "%s | Sukilo",
   },
   description:
